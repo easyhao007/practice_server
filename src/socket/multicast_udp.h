@@ -7,36 +7,28 @@
 
 #ifndef _MULTICAST_H
 #define _MULTICAST_H
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <time.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <string.h>
+#include <p_core_error.h>
 
 using namespace std;
 
 class multicast
 {
 public:
-    multicast();
+    multicast(string local_ip , string m_ip , string m_port);
     virtual ~multicast();
 
 private:
     //组播IP
     string  _multicast_ip;
+    string  _multicast_port;
     //本地网卡IP
     string  _local_ip;
-    string  _port;
     //流ID
     int     _sid;
 
 private:
     sockaddr_in     _addr;
-    ip_merq         _merq;
+    ip_mreq         _mreq;
     int             _fd;
 public:
     //运行状态
@@ -46,5 +38,5 @@ public:
     int init();
     int start();
     int stop();
-}
+};
 #endif

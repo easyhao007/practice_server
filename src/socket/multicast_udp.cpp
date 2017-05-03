@@ -5,39 +5,15 @@
 	> Created Time: Wed 03 May 2017 10:15:06 AM CST
  ************************************************************************/
 #include "multicast_udp.h"
-/*
-{
-public:
-    multicast();
-    virtual ~multicast();
 
-private:
-    //组播IP
-    string  _multicast_ip;
-    //本地网卡IP
-    string  _local_ip;
-    string  _port;
-    //流ID
-    int     _sid;
-
-private:
-    sockaddr_in     _addr;
-    ip_merq         _merq;
-    
-public:
-    int init();
-    int start();
-}
-*/
-multicast::multicast()
+multicast::multicast(string local_ip , string multicast_ip , string multicast_port)
 {
-    
+    _local_ip = local_ip;
+    _multicast_ip = multicast_ip;
+    _multicast_port = multicast_port;
 }
+multicast::~multicast(){ }
 
-multicast::~multicast()
-{
-    
-}
 
 int multicast::init()
 {
@@ -48,28 +24,38 @@ int multicast::init()
         return -1;
     }
 
-    uint8_t yes = 1;
+    /*uint8_t yes = 1;
     ret = setsockopt(_fd , SOL_SOCKET , SO_REUSEADDR , &yes , sizeof(yes));
     if(ret < 0)
     {
         return -1;
-    }
+    }*/
 
-    memset(_addr , 0 , sizeof(_addr));
+    memset(&_addr , 0 , sizeof(_addr));
     _addr.sin_family = AF_INET;
+
     _addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    _addr.sin_port = htons(atoi(_port.c_str()));
+    _addr.sin_port = htons(atoi(_multicast_port.c_str()));
 
     ret = bind(_fd , (sockaddr*)&_addr , sizeof(_addr));
     if(ret < 0)
     {
         return -1;
     }
-    
-    _mreq.imr_multiaddr.s_addr=inet_addr(_multicast_ip);  
-    _mreq.imr_interface.s_addr=htonl(INADDR_ANY);  
 
-    ret = setsockopt(_fd , IPPROTO_IP , IP_ADD_MEMBERSHIP , &_merq , sizeof(_merq));
+    /*设置回环许可*/
+
+    int loop = 1;
+    ret = setsockopt(_fd , IPPROTO_IP , IP_MULTICAST_LOOP , &loop, sizeof(loop));
+
+    if(ret < 0)
+    {
+        return -1;
+    }
+    _mreq.imr_multiaddr.s_addr=inet_addr(_multicast_ip.c_str());
+    _mreq.imr_interface.s_addr=inet_addr(_local_ip.c_str());
+
+    ret = setsockopt(_fd , IPPROTO_IP , IP_ADD_MEMBERSHIP , &_mreq , sizeof(_mreq));
     if(ret < 0)
     {
         return -1;
@@ -97,6 +83,7 @@ int multicast::start()
         {
             return -1;
         }
+        printf("recv:%d bytes\n" , nbytes);
         _buffer += buf;
     }
     return ret;
@@ -106,5 +93,11 @@ int multicast::stop()
 {
     int ret = 0;
     _status = 0;
+    close(_fd);
+    ret = setsockopt(_fd , IPPROTO_IP , IP_DROP_MEMBERSHIP,&_mreq , sizeof(_mreq));
+    if(ret < 0)
+    {
+        return -1;
+    }
     return ret;
 }

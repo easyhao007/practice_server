@@ -1,0 +1,14 @@
+//
+// Created by root on 17-5-3.
+//
+
+#ifndef PRACTICE_SERVER_DECODE_TS_H
+#define PRACTICE_SERVER_DECODE_TS_H
+
+
+class decode_ts {
+
+};
+
+
+#endif //PRACTICE_SERVER_DECODE_TS_H
