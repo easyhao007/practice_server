@@ -14,6 +14,8 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <string.h>
 
 using namespace std;
 
@@ -35,9 +37,14 @@ private:
 private:
     sockaddr_in     _addr;
     ip_merq         _merq;
-    
+    int             _fd;
+public:
+    //运行状态
+    int             _status;
+    string          _buffer;
 public:
     int init();
     int start();
+    int stop();
 }
 #endif
